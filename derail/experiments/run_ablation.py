@@ -37,7 +37,7 @@ SWEEPS: dict[str, list] = {
     "spectral_radius": [0.6, 0.8, 0.9, 0.95, 1.05],
     "leak_rate": [0.15, 0.3, 0.5, 0.7],
     "K": [1, 2, 4, 8, 16],
-    "cusum_k": [0.25, 0.5, 0.75, 1.0],
+    "cusum_k": [0.05, 0.1, 0.25, 0.5, 0.75, 1.0, 2.0, 5.0],
     # beta=0 turns the disagreement (ensemble prediction-spread) term OFF, so
     # this sweep doubles as the disagreement ablation: it shows whether
     # the fixed disagreement weight of 0.5 is doing any work.
