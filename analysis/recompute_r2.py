@@ -17,6 +17,13 @@ from pathlib import Path
 
 import pandas as pd
 
+# Windows 控制台默认 cp936，print "✓" 会 UnicodeEncodeError 并让脚本半路死掉。
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 ROOT = Path(__file__).resolve().parents[1]
 TABLES = ROOT / "results" / "tables"
 

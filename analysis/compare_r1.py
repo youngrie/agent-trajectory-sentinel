@@ -1,13 +1,19 @@
-"""S3.1 — R1 复现核对：工作副本 vs git HEAD 逐字节 + 逐指标比对。
+"""S3.1 — R1 复现核对：工作副本 vs 基线 commit 逐字节 + 逐指标比对。
 
 两件事一起做：
-  1) 字节级：把当前的 results/tables/multiseed_summary.csv 与 HEAD 里提交的版本比较，
+  1) 字节级：把当前的 results/tables/multiseed_summary.csv 与基线 commit 里提交的版本比较，
      判断这次重跑是否"原样重建"了已发布的表。
   2) 指标级：把 esn_cusum_max 的四个核心指标与 CLAIMS.md 的目标值比较，
      给出偏差，并以"标准差的倍数"表示（因为多 seed 天然有波动）。
 
+为什么默认比 1b3e07fe 而不是 HEAD：
+    复现跑完之后会新建一个 commit 把重跑产物提交进去，此时 HEAD 已经等于"本次结果"，
+    再和 HEAD 比就是在和自己比，必然"完全一致"，等于什么都没验证。
+    必须始终比"作者发布数字所在的那个 commit"。
+
 运行（在 agent-trajectory-sentinel 根目录）：
     ..\\.venv\\Scripts\\python.exe analysis\\compare_r1.py
+    ..\\.venv\\Scripts\\python.exe analysis\\compare_r1.py <基线commit>
 
 退出码：0 = 全部通过；1 = 有差异（差异本身不一定是错误，需人工判读）。
 """
@@ -15,15 +21,26 @@
 from __future__ import annotations
 
 import io
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 import pandas as pd
 
+# Windows 控制台默认 cp936，直接 print "✓/↓" 会 UnicodeEncodeError 并让脚本半路死掉。
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 ROOT = Path(__file__).resolve().parents[1]
 REL = "results/tables/multiseed_summary.csv"
 WORK = ROOT / REL
+
+# 作者发布数字所在的 commit（1b3e07fe 的父提交链上最后一次改动 results/ 的版本）
+BASELINE = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("REPRO_BASE", "1b3e07fe")
 
 # ---- 目标值：CLAIMS.md 第 40-43 行 + multiseed_summary.csv 首行 ----
 TARGET = {
@@ -39,12 +56,11 @@ TARGET = {
 }
 
 
-def git_show_head() -> str | None:
-    """取 HEAD 里提交的原始 CSV 文本。"""
+def git(*args: str) -> str | None:
     try:
         out = subprocess.run(
-            ["git", "show", f"HEAD:{REL}"],
-            cwd=ROOT, capture_output=True, text=True, check=True,
+            ["git", *args], cwd=ROOT, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", check=True,
         )
         return out.stdout
     except subprocess.CalledProcessError:
@@ -55,18 +71,29 @@ def main() -> int:
     print("=" * 78)
     print("S3.1  R1 复现核对（multiseed_summary.csv）")
     print("=" * 78)
+    head = (git("rev-parse", "--short", "HEAD") or "?").strip()
+    base_full = (git("rev-parse", "--short", BASELINE) or "").strip()
+    if not base_full:
+        print(f"!! 基线 commit {BASELINE} 不存在 —— 用 git log --oneline 找一个再传进来")
+        return 1
+    print(f"基线 commit : {base_full}")
+    print(f"当前 HEAD   : {head}")
+    if base_full == head:
+        print("!! HEAD 就是基线本身，这次比对没有意义；先提交重跑产物再跑本脚本。")
+    result = git("status", "--porcelain", "--", REL)
+    print(f"工作副本状态 : {'未提交改动' if result and result.strip() else '与 HEAD 一致'}")
 
     if not WORK.exists():
         print(f"!! 找不到 {REL} —— S1 还没跑完，或跑到了别的路径。")
         return 1
 
-    head_text = git_show_head()
+    head_text = git("show", f"{base_full}:{REL}")
     cur_text = WORK.read_text(encoding="utf-8")
 
     # ---------- 1. 字节级 ----------
-    print("\n### 1. 字节级比对（工作副本 vs HEAD 已提交版本）")
+    print(f"\n### 1. 字节级比对（工作副本 vs {base_full} 已提交版本）")
     if head_text is None:
-        print("  !! 无法从 git 取到 HEAD 版本（可能不在仓库根目录）")
+        print("  !! 无法从 git 取到该版本（path 或 commit 不对）")
     elif head_text == cur_text:
         print("  结果：**逐字节完全一致** ✓")
         print("  含义：本次重跑原样重建了已发布的表，这是最强的复现证据。")
@@ -78,7 +105,9 @@ def main() -> int:
             print("  !! 列名变了 —— 说明代码或配置不是同一版，先查这个")
         else:
             num = [x for x in h.columns if x != "monitor"]
-            diff = (h.set_index("monitor")[num] - c.set_index("monitor")[num]).abs()
+            hh = h.set_index("monitor")[num]
+            cc = c.set_index("monitor")[num]
+            diff = (hh - cc).abs()
             worst = diff.max()
             changed = worst[worst > 0]
             if changed.empty:
@@ -87,6 +116,10 @@ def main() -> int:
                 print("  有数值变化的列：")
                 for col, v in changed.items():
                     print(f"    {col:<28} 最大绝对差 {v:.6g}")
+                rows = sorted({i for col in changed.index for i in diff.index[diff[col] > 0]})
+                print(f"\n  变动行（{len(rows)}）： {', '.join(rows)}")
+                print("  判读提示：只有极少数行变动、且量级在 1e-2 以上时，先查该行监控器是否")
+                print("            依赖 torch/SGD；只有 1e-11 量级时属于浮点末位噪声。")
 
     # ---------- 2. 指标级 ----------
     print("\n### 2. 指标级比对（对照 CLAIMS.md 目标值）")
@@ -115,7 +148,7 @@ def main() -> int:
             if abs(delta) < 1e-9:
                 v = "✓ 完全一致"
             elif z < 1.0:
-                v = f"✓ 在 1σ 内"
+                v = "✓ 在 1σ 内"
             elif z < 2.0:
                 v = f"~ 在 {z:.1f}σ（需解释）"
             else:
@@ -126,7 +159,7 @@ def main() -> int:
             print(f"    {'  (std)':<20}{'':>10}{got_sd:>10.4f}")
 
     # ---------- 3. 全表概览 ----------
-    print("\n### 3. 全表概览（11 个监控器，检测率降序）")
+    print("\n### 3. 全表概览（检测率降序）")
     view = cur[["detection_rate_mean", "healthy_fa_rate_mean", "episode_auc_mean"]]
     print(view.sort_values("detection_rate_mean", ascending=False)
               .round(4).to_string())
