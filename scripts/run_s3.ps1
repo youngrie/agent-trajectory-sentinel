@@ -58,6 +58,19 @@ Write-Host "== 3.3 R2: independent recomputation ==" -ForegroundColor Cyan
 & $py analysis\recompute_r2.py *>&1 | Tee-Object -FilePath logs\S3_recompute_r2.txt
 $r2 = $LASTEXITCODE
 
+# Windows PowerShell 5.1's Tee-Object has no -Encoding switch and always writes
+# UTF-16LE. git then treats the log as binary and GitHub renders it as
+# "Binary file not shown" -- which defeats the purpose of committing the
+# evidence. Re-encode anything carrying a UTF-16 BOM in place.
+Get-ChildItem logs\S3_*.txt -ErrorAction SilentlyContinue | ForEach-Object {
+    $b = [System.IO.File]::ReadAllBytes($_.FullName)
+    if ($b.Length -ge 2 -and $b[0] -eq 0xFF -and $b[1] -eq 0xFE) {
+        $t = [System.Text.Encoding]::Unicode.GetString($b, 2, $b.Length - 2)
+        [System.IO.File]::WriteAllText($_.FullName, $t, (New-Object System.Text.UTF8Encoding $false))
+        Write-Host ("  re-encoded {0} to utf-8" -f $_.Name) -ForegroundColor DarkGray
+    }
+}
+
 Write-Host ""
 Write-Host "== summary ==" -ForegroundColor Cyan
 Write-Host ("baseline = {0}" -f $baseFull)

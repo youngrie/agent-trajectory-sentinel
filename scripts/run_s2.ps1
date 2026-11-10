@@ -66,5 +66,18 @@ Write-Host ""
 Write-Host "== git diff --stat ==" -ForegroundColor Cyan
 git diff --stat -- results/tables
 
+# Windows PowerShell 5.1's Tee-Object has no -Encoding switch and always writes
+# UTF-16LE. git then treats the log as binary and GitHub renders it as
+# "Binary file not shown" -- which defeats the purpose of committing the
+# evidence. Re-encode anything carrying a UTF-16 BOM in place.
+Get-ChildItem logs\S2_*.txt -ErrorAction SilentlyContinue | ForEach-Object {
+    $b = [System.IO.File]::ReadAllBytes($_.FullName)
+    if ($b.Length -ge 2 -and $b[0] -eq 0xFF -and $b[1] -eq 0xFE) {
+        $t = [System.Text.Encoding]::Unicode.GetString($b, 2, $b.Length - 2)
+        [System.IO.File]::WriteAllText($_.FullName, $t, (New-Object System.Text.UTF8Encoding $false))
+        Write-Host ("  re-encoded {0} to utf-8" -f $_.Name) -ForegroundColor DarkGray
+    }
+}
+
 Write-Host ""
 Write-Host "Done. If 'git diff --stat' printed nothing above, the tables were rebuilt byte-identically." -ForegroundColor Green
