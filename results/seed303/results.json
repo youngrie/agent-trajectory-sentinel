@@ -121,7 +121,7 @@
     "per_monitor": {
       "esn_full": {
         "monitor": "esn_full",
-        "theta": 6.658502397267016,
+        "theta": 6.658502397267021,
         "detection_rate": 0.4775,
         "healthy_fa_rate": 0.025,
         "early_alarm_rate": 0.015,
@@ -140,7 +140,7 @@
       },
       "esn_single": {
         "monitor": "esn_single",
-        "theta": 6.375980822036392,
+        "theta": 6.375980822036469,
         "detection_rate": 0.4375,
         "healthy_fa_rate": 0.025,
         "early_alarm_rate": 0.02,
@@ -159,7 +159,7 @@
       },
       "esn[e]": {
         "monitor": "esn[e]",
-        "theta": 3.8592098404768946,
+        "theta": 3.859209840476905,
         "detection_rate": 0.58,
         "healthy_fa_rate": 0.0375,
         "early_alarm_rate": 0.0125,
@@ -178,7 +178,7 @@
       },
       "esn[u]": {
         "monitor": "esn[u]",
-        "theta": 5.2255868848652725,
+        "theta": 5.225586884862936,
         "detection_rate": 0.3075,
         "healthy_fa_rate": 0.03125,
         "early_alarm_rate": 0.0225,
@@ -197,7 +197,7 @@
       },
       "esn[m]": {
         "monitor": "esn[m]",
-        "theta": 14.039263445381007,
+        "theta": 14.039263445381199,
         "detection_rate": 0.2375,
         "healthy_fa_rate": 0.075,
         "early_alarm_rate": 0.0275,
@@ -216,7 +216,7 @@
       },
       "esn[e,u]": {
         "monitor": "esn[e,u]",
-        "theta": 3.4587572643475637,
+        "theta": 3.4587572643475837,
         "detection_rate": 0.595,
         "healthy_fa_rate": 0.05,
         "early_alarm_rate": 0.0125,
@@ -235,7 +235,7 @@
       },
       "esn_cusum": {
         "monitor": "esn_cusum",
-        "theta": 27.378096814187305,
+        "theta": 27.378096814187433,
         "detection_rate": 0.625,
         "healthy_fa_rate": 0.0375,
         "early_alarm_rate": 0.015,
@@ -254,7 +254,7 @@
       },
       "esn_cusum[e]": {
         "monitor": "esn_cusum[e]",
-        "theta": 25.376309359948966,
+        "theta": 25.376309359949914,
         "detection_rate": 0.5925,
         "healthy_fa_rate": 0.03125,
         "early_alarm_rate": 0.005,
@@ -273,7 +273,7 @@
       },
       "esn_cusum[u]": {
         "monitor": "esn_cusum[u]",
-        "theta": 29.99376989024285,
+        "theta": 29.993769890211322,
         "detection_rate": 0.35,
         "healthy_fa_rate": 0.025,
         "early_alarm_rate": 0.01,
@@ -292,7 +292,7 @@
       },
       "esn_cusum[m]": {
         "monitor": "esn_cusum[m]",
-        "theta": 61.302054551718186,
+        "theta": 61.30205455173149,
         "detection_rate": 0.3775,
         "healthy_fa_rate": 0.03125,
         "early_alarm_rate": 0.01,
@@ -311,7 +311,7 @@
       },
       "esn_cusum[e,u]": {
         "monitor": "esn_cusum[e,u]",
-        "theta": 22.575825177102274,
+        "theta": 22.575825177101507,
         "detection_rate": 0.6275,
         "healthy_fa_rate": 0.03125,
         "early_alarm_rate": 0.005,
@@ -330,7 +330,7 @@
       },
       "esn_cusum_max": {
         "monitor": "esn_cusum_max",
-        "theta": 54.41686984963026,
+        "theta": 54.41686984960371,
         "detection_rate": 0.725,
         "healthy_fa_rate": 0.04375,
         "early_alarm_rate": 0.01,
@@ -349,7 +349,7 @@
       },
       "linear_ar": {
         "monitor": "linear_ar",
-        "theta": 32.17459157931371,
+        "theta": 32.17459157931404,
         "detection_rate": 0.61,
         "healthy_fa_rate": 0.025,
         "early_alarm_rate": 0.0075,
@@ -368,7 +368,7 @@
       },
       "gru": {
         "monitor": "gru",
-        "theta": 24.281346388131183,
+        "theta": 24.281346382315213,
         "detection_rate": 0.5925,
         "healthy_fa_rate": 0.04375,
         "early_alarm_rate": 0.015,
@@ -387,7 +387,7 @@
       },
       "tcn": {
         "monitor": "tcn",
-        "theta": 40.806128216811054,
+        "theta": 40.80612821674377,
         "detection_rate": 0.355,
         "healthy_fa_rate": 0.04375,
         "early_alarm_rate": 0.0075,
@@ -406,7 +406,7 @@
       },
       "lstm": {
         "monitor": "lstm",
-        "theta": 28.92364372671391,
+        "theta": 28.92364372669587,
         "detection_rate": 0.575,
         "healthy_fa_rate": 0.0375,
         "early_alarm_rate": 0.0125,
@@ -1195,21 +1195,21 @@
     "fused": {
       "null_ks": 0.07164256198347113,
       "null_fa_at_0.95": 0.04375,
-      "ece_iso": 0.025711488048124523
+      "ece_iso": 0.02571148804853527
     },
     "surprise": {
       "null_ks": 0.05991735537190079,
       "null_fa_at_0.95": 0.075,
-      "ece_iso": 0.01949348576565498
+      "ece_iso": 0.019493485765661317
     },
     "disagreement": {
       "null_ks": 0.10733471074380169,
       "null_fa_at_0.95": 0.0375,
-      "ece_iso": 0.026659619146450812
+      "ece_iso": 0.026659619146674723
     }
   },
   "h3_escalation": {
-    "theta_soft": 42.93395004289914,
+    "theta_soft": 42.93395004289452,
     "policies": [
       {
         "policy": "never",
