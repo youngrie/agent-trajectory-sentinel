@@ -59,6 +59,16 @@ and the repair path — is in [DESIGN.md](DESIGN.md#architecture).
   <br>
 </p>
 
+> **This fork is a reproducibility study.** It reproduces two of the results
+> below — the five-seed monitor headline and the deterministic checks versus
+> monitor comparison — byte-for-byte rather than within tolerance; widens the
+> `cusum_k` ablation to find a plateau and a cliff the published grid never
+> covered; and documents the one baseline that moves (0.22σ) together with the
+> cause. Install steps that actually work on this platform, the expected
+> numbers, and an exhaustive list of what does not reproduce are in
+> **[REPRODUCTION_STUDY.md](REPRODUCTION_STUDY.md)**. Everything is five commits
+> on top of `1b3e07fe`; §7 there is the map.
+
 ## Install
 
 ```
@@ -68,6 +78,13 @@ pip install -r requirements.lock.txt     # pinned — required to reproduce a pu
 
 Python 3.13+. The GRU/LSTM/TCN baselines additionally need
 `torch==2.12.0+cpu` from the CPU wheel index; everything else runs without it.
+
+> *Reproduction note.* `+cpu` is a PEP 440 local version label that exists only
+> on `download.pytorch.org/whl/cpu`, so the second command above needs
+> `--extra-index-url https://download.pytorch.org/whl/cpu` — it fails against
+> PyPI alone. And if the venv came from `uv`, it contains no `pip`, so use the
+> venv's own interpreter (`python -m pip`) rather than a bare `pip`. Full
+> sequence: [REPRODUCTION_STUDY.md §3](REPRODUCTION_STUDY.md#3-install).
 
 ## Quick start
 
